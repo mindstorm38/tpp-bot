@@ -148,22 +148,29 @@ fn run(config: &Config) -> io::Result<()> {
                 let utc_time = Utc::now();
                 log_interval = 0;
 
-                log_file.write_fmt(format_args!("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
-                    utc_time.timestamp(),
-                    global_sample.message_count as f32 / GLOBAL_SAMPLE_DURATION.as_secs_f32(), 
-                    global_sample.tpp_command_count as f32 / GLOBAL_SAMPLE_DURATION.as_secs_f32(),
-                    global_sample.up as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.left as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.down as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.right as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.a as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.b as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.x as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.y as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.demo as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.anar as f32 / global_sample.tpp_command_count as f32,
-                    global_sample.start as f32 / global_sample.tpp_command_count as f32,
-                )).unwrap();
+                if global_sample.tpp_command_count > 0 {
+                    log_file.write_fmt(format_args!("{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", 
+                        utc_time.timestamp(),
+                        global_sample.message_count as f32 / GLOBAL_SAMPLE_DURATION.as_secs_f32(), 
+                        global_sample.tpp_command_count as f32 / GLOBAL_SAMPLE_DURATION.as_secs_f32(),
+                        global_sample.up as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.left as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.down as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.right as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.a as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.b as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.x as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.y as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.demo as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.anar as f32 / global_sample.tpp_command_count as f32,
+                        global_sample.start as f32 / global_sample.tpp_command_count as f32,
+                    )).unwrap();
+                } else {
+                    log_file.write_fmt(format_args!("{}\t{}\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\t0\n",  
+                        utc_time.timestamp(),
+                        global_sample.message_count as f32 / GLOBAL_SAMPLE_DURATION.as_secs_f32(), 
+                    )).unwrap();
+                }
 
                 log_file.flush().unwrap();
                 
@@ -188,7 +195,7 @@ fn run(config: &Config) -> io::Result<()> {
         // We add 0.5s to the minimum interval as a margin of error.
         // If the minimum interval is not respected, the bot is ignored 
         // for 30 minutes by Twitch.
-        let interval_secs = (10.0 - tpp_command_sec).max(1.0 / MESSAGES_RATE_LIMIT + 0.3);
+        let interval_secs = (8.0 - tpp_command_sec).max(1.0 / MESSAGES_RATE_LIMIT + 0.3);
         let interval = Duration::from_secs_f32(interval_secs);
 
         let remaining_time = if samples_full {
